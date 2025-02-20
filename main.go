@@ -60,7 +60,6 @@ func main() {
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
-	defer resp.Body.Close()
 
 	// response output
 	fmt.Printf("Status: %s\n", resp.Status)
