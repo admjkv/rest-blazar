@@ -55,6 +55,8 @@ func main() {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
+	startTime := time.Now()
+
 	// send the request
 	resp, err := client.Do(req)
 	if err != nil {
@@ -62,6 +64,8 @@ func main() {
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
+
+	duration := time.Since(startTime)
 
 	// response output
 	data, err := io.ReadAll(resp.Body)
@@ -78,11 +82,11 @@ func main() {
 	case "body-only":
 		fmt.Println(string(data))
 	default: // "pretty"
-		outputPretty(resp, data)
+		outputPretty(resp, data, duration)
 	}
 }
 
-func outputPretty(resp *http.Response, data []byte) {
+func outputPretty(resp *http.Response, data []byte, duration time.Duration) {
 	fmt.Printf("Status: %s\n", resp.Status)
 	fmt.Println("Headers:")
 	for key, values := range resp.Header {
@@ -90,6 +94,7 @@ func outputPretty(resp *http.Response, data []byte) {
 	}
 	fmt.Println("Body:")
 	fmt.Println(string(data))
+	fmt.Printf("Request completed in %v\n", duration)
 }
 
 func outputJSON(resp *http.Response, data []byte) {
