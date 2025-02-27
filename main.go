@@ -19,6 +19,7 @@ func main() {
 	headers := flag.String("headers", "", "Headers to send with request")
 	timeout := flag.Int("timeout", 10, "Timeout in seconds")
 	output := flag.String("output", "pretty", "Output format: pretty, json, headers-only, body-only")
+	outputFile := flag.String("save", "", "Save response body to file")
 	flag.Parse()
 
 	// check for url
@@ -72,6 +73,15 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error reading response body: %v\n", err)
 		os.Exit(1)
+	}
+
+	if *outputFile != "" {
+		err := os.WriteFile(*outputFile, data, 0644)
+		if err != nil {
+			fmt.Printf("Error saving response to file: %v\n", err)
+		} else {
+			fmt.Printf("Response saved to %s\n", *outputFile)
+		}
 	}
 
 	switch *output {
