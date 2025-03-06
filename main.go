@@ -86,7 +86,7 @@ func main() {
 
 	switch *output {
 	case "json":
-		outputJSON(resp, data)
+		outputJSON(resp, data, duration)
 	case "headers-only":
 		outputHeaders(resp)
 	case "body-only":
@@ -107,14 +107,19 @@ func outputPretty(resp *http.Response, data []byte, duration time.Duration) {
 	fmt.Printf("Request completed in %v\n", duration)
 }
 
-func outputJSON(resp *http.Response, data []byte) {
+func outputJSON(resp *http.Response, data []byte, duration time.Duration) {
 	result := map[string]interface{}{
 		"status":     resp.Status,
 		"statusCode": resp.StatusCode,
 		"headers":    resp.Header,
 		"body":       string(data),
+		"duration":   duration.String(),
 	}
-	jsonData, _ := json.MarshalIndent(result, "", "  ")
+	jsonData, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		fmt.Printf("Error marshaling JSON response: %v\n", err)
+		return
+	}
 	fmt.Println(string(jsonData))
 }
 
