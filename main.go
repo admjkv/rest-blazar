@@ -20,6 +20,7 @@ func main() {
 	timeout := flag.Int("timeout", 10, "Timeout in seconds")
 	output := flag.String("output", "pretty", "Output format: pretty, json, headers-only, body-only")
 	outputFile := flag.String("save", "", "Save response body to file")
+	bodyFile := flag.String("body-file", "", "File containing the request body")
 	flag.Parse()
 
 	// check for url
@@ -33,8 +34,21 @@ func main() {
 		Timeout: time.Duration(*timeout) * time.Second,
 	}
 
+	// determine the request body
+	var reqBody io.Reader
+	if *bodyFile != "" {
+		fileData, err := os.ReadFile(*bodyFile)
+		if err != nil {
+			fmt.Printf("Error reading body file: %v\n", err)
+			os.Exit(1)
+		}
+		reqBody = strings.NewReader(string(fileData))
+	} else {
+		reqBody = strings.NewReader(*body)
+	}
+
 	// build the request
-	req, err := http.NewRequest(*method, *url, strings.NewReader(*body))
+	req, err := http.NewRequest(*method, *url, reqBody)
 	if err != nil {
 		fmt.Printf("Error creating request: %v\n", err)
 		os.Exit(1)
