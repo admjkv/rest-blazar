@@ -21,6 +21,8 @@ func main() {
 	output := flag.String("output", "pretty", "Output format: pretty, json, headers-only, body-only")
 	outputFile := flag.String("save", "", "Save response body to file")
 	bodyFile := flag.String("body-file", "", "File containing the request body")
+	username := flag.String("user", "", "Username for basic auth")
+	password := flag.String("pass", "", "Password for basic auth")
 	flag.Parse()
 
 	// check for url
@@ -52,6 +54,10 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error creating request: %v\n", err)
 		os.Exit(1)
+	}
+
+	if *username != "" {
+		req.SetBasicAuth(*username, *password)
 	}
 
 	// add headers if provided
