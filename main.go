@@ -24,6 +24,7 @@ func main() {
 	username := flag.String("user", "", "Username for basic auth")
 	password := flag.String("pass", "", "Password for basic auth")
 	verbose := flag.Bool("verbose", false, "Show request details")
+	noRedirect := flag.Bool("no-redirect", false, "Don't follow redirects")
 	flag.Parse()
 
 	// check for url
@@ -32,9 +33,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	// create http request with timout
+	// create http client with custom settings
 	client := http.Client{
 		Timeout: time.Duration(*timeout) * time.Second,
+	}
+
+	// configure redirect policy
+	if *noRedirect {
+		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
 	}
 
 	// determine the request body
