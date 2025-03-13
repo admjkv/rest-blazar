@@ -23,6 +23,7 @@ func main() {
 	bodyFile := flag.String("body-file", "", "File containing the request body")
 	username := flag.String("user", "", "Username for basic auth")
 	password := flag.String("pass", "", "Password for basic auth")
+	verbose := flag.Bool("verbose", false, "Show request details")
 	flag.Parse()
 
 	// check for url
@@ -74,6 +75,19 @@ func main() {
 	} else {
 		// default header fallback
 		req.Header.Set("Content-Type", "application/json")
+	}
+
+	// display request information in verbose mode
+	if *verbose {
+		fmt.Printf("\n> %s %s\n", req.Method, req.URL)
+		for key, values := range req.Header {
+			fmt.Printf("> %s: %s\n", key, strings.Join(values, ", "))
+		}
+		if *body != "" || *bodyFile != "" {
+			fmt.Println("> ")
+			fmt.Println("> " + *body)
+		}
+		fmt.Println()
 	}
 
 	startTime := time.Now()
