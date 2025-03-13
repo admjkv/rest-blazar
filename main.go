@@ -131,7 +131,23 @@ func main() {
 }
 
 func outputPretty(resp *http.Response, data []byte, duration time.Duration) {
-	fmt.Printf("Status: %s\n", resp.Status)
+	// color codes for status
+	var statusColor string
+	switch {
+	case resp.StatusCode >= 500:
+		statusColor = "\033[31m" // Red for 5xx
+	case resp.StatusCode >= 400:
+		statusColor = "\033[33m" // Yellow for 4xx
+	case resp.StatusCode >= 300:
+		statusColor = "\033[36m" // Cyan for 3xx
+	case resp.StatusCode >= 200:
+		statusColor = "\033[32m" // Green for 2xx
+	default:
+		statusColor = "\033[37m" // White for other
+	}
+	resetColor := "\033[0m"
+
+	fmt.Printf("Status: %s%s%s\n", statusColor, resp.Status, resetColor)
 	fmt.Println("Headers:")
 	for key, values := range resp.Header {
 		fmt.Printf("  %s: %s\n", key, strings.Join(values, ", "))
