@@ -25,6 +25,8 @@ func main() {
 	password := flag.String("pass", "", "Password for basic auth")
 	verbose := flag.Bool("verbose", false, "Show request details")
 	noRedirect := flag.Bool("no-redirect", false, "Don't follow redirects")
+	jsonData := flag.String("json", "", "JSON data as key=value pairs (e.g. name=John,age=30)")
+	formData := flag.String("form", "", "Form data as key=value pairs (e.g. name=John,age=30)")
 	flag.Parse()
 
 	// check for url
