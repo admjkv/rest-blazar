@@ -28,6 +28,8 @@ func main() {
 	http2 := flag.Bool("http2", false, "Force HTTP/2 protocol")
 	jsonData := flag.String("json", "", "JSON data as key=value pairs (e.g. name=John,age=30)")
 	formData := flag.String("form", "", "Form data as key=value pairs (e.g. name=John,age=30)")
+	retries := flag.Int("retries", 0, "Number of retry attempts for failed requests")
+	retryDelay := flag.Int("retry-delay", 1, "Delay between retries in seconds")
 	flag.Parse()
 
 	// check for url
@@ -144,15 +146,42 @@ func main() {
 		fmt.Println()
 	}
 
-	startTime := time.Now()
+	// Implement retries
+	var respData []byte
+	var finalResp *http.Response
+	var finalErr error
 
-	// send the request
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Printf("Error performing request: %v\n", err)
+	for attempt := 0; attempt <= *retries; attempt++ {
+		if attempt > 0 {
+			fmt.Printf("Retry attempt %d/%d...\n", attempt, *retries)
+			time.Sleep(time.Duration(*retryDelay) * time.Second)
+		}
+
+		startTime := time.Now()
+		resp, err := client.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+			data, err := io.ReadAll(resp.Body)
+			if err == nil {
+				duration = time.Since(startTime)
+				respData = data
+				finalResp = resp
+				finalErr = nil
+				break
+			}
+			finalErr = err
+		} else {
+			finalErr = err
+		}
+	}
+
+	if finalErr != nil {
+		fmt.Printf("Error after %d attempts: %v\n", *retries+1, finalErr)
 		os.Exit(1)
 	}
-	defer resp.Body.Close()
+
+	resp = finalResp
+	data := respData
 
 	duration := time.Since(startTime)
 
@@ -163,7 +192,7 @@ func main() {
 	}
 
 	// response output
-	data, err := io.ReadAll(resp.Body)
+	data, err = io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error reading response body: %v\n", err)
 		os.Exit(1)
