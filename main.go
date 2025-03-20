@@ -56,6 +56,41 @@ func main() {
 			os.Exit(1)
 		}
 		reqBody = strings.NewReader(string(fileData))
+	} else if *jsonData != "" {
+		// Process JSON data from command line
+		jsonMap := make(map[string]interface{})
+		pairs := strings.Split(*jsonData, ",")
+		for _, pair := range pairs {
+			parts := strings.SplitN(pair, "=", 2)
+			if len(parts) == 2 {
+				jsonMap[parts[0]] = parts[1]
+			}
+		}
+		jsonBytes, err := json.Marshal(jsonMap)
+		if err != nil {
+			fmt.Printf("Error creating JSON: %v\n", err)
+			os.Exit(1)
+		}
+		reqBody = strings.NewReader(string(jsonBytes))
+		// Set JSON content type if not overridden
+		if req.Header.Get("Content-Type") == "" {
+			req.Header.Set("Content-Type", "application/json")
+		}
+	} else if *formData != "" {
+		// Process form data
+		formValues := url.Values{}
+		pairs := strings.Split(*formData, ",")
+		for _, pair := range pairs {
+			parts := strings.SplitN(pair, "=", 2)
+			if len(parts) == 2 {
+				formValues.Add(parts[0], parts[1])
+			}
+		}
+		reqBody = strings.NewReader(formValues.Encode())
+		// Set form content type if not overridden
+		if req.Header.Get("Content-Type") == "" {
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		}
 	} else {
 		reqBody = strings.NewReader(*body)
 	}
