@@ -147,6 +147,12 @@ func main() {
 
 	duration := time.Since(startTime)
 
+	// Display timing stats in verbose mode
+	if *verbose {
+		fmt.Printf("\nRequest completed in %v\n", duration)
+		fmt.Printf("Time to first byte: %v\n", time.Since(startTime))
+	}
+
 	// response output
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
