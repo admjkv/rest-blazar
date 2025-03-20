@@ -119,8 +119,13 @@ func main() {
 
 	// add headers if provided
 	if *headers != "" {
-		pairs := strings.Split(*headers, ",")
+		// Support both comma and newline separated headers
+		headerList := strings.Replace(*headers, "\n", ",", -1)
+		pairs := strings.Split(headerList, ",")
 		for _, pair := range pairs {
+			if pair = strings.TrimSpace(pair); pair == "" {
+				continue
+			}
 			parts := strings.SplitN(pair, ":", 2)
 			if len(parts) == 2 {
 				key := strings.TrimSpace(parts[0])
@@ -128,8 +133,10 @@ func main() {
 				req.Header.Set(key, value)
 			}
 		}
-	} else {
-		// default header fallback
+	}
+
+	// Apply default Content-Type only if not already set
+	if req.Header.Get("Content-Type") == "" {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
