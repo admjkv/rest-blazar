@@ -25,6 +25,7 @@ func main() {
 	password := flag.String("pass", "", "Password for basic auth")
 	verbose := flag.Bool("verbose", false, "Show request details")
 	noRedirect := flag.Bool("no-redirect", false, "Don't follow redirects")
+	http2 := flag.Bool("http2", false, "Force HTTP/2 protocol")
 	jsonData := flag.String("json", "", "JSON data as key=value pairs (e.g. name=John,age=30)")
 	formData := flag.String("form", "", "Form data as key=value pairs (e.g. name=John,age=30)")
 	flag.Parse()
@@ -38,6 +39,14 @@ func main() {
 	// create http client with custom settings
 	client := http.Client{
 		Timeout: time.Duration(*timeout) * time.Second,
+	}
+
+	// Configure HTTP/2 transport if requested
+	if *http2 {
+		transport := &http.Transport{
+			ForceAttemptHTTP2: true,
+		}
+		client.Transport = transport
 	}
 
 	// configure redirect policy
